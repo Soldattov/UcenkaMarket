@@ -26,20 +26,6 @@ Frontend: Django Templates, Bootstrap 5, HTML/CSS/JS
 Authentication: Django Auth (телефон + роль)
 Version Control: Git, GitHub
 
-## Структура проекта
-
-ucenkamarket/
-├── config/ — Настройки проекта Django
-├── core/ — Основное приложение
-│   ├── models.py — Модели данных
-│   ├── views.py — Views для экранов
-│   ├── urls.py — Маршруты
-│   ├── forms.py — Формы
-│   └── templates/ — HTML-шаблоны
-├── manage.py
-├── requirements.txt
-└── README.md
-
 ## Модель данных
 
 Основные сущности:
