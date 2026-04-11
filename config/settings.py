@@ -56,14 +56,13 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes', 'on')
 
-_allowed_hosts = os.environ.get('ALLOWED_HOSTS', '').strip()
-if _allowed_hosts:
-    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',') if h.strip()]
-elif DEBUG:
-    # runserver 0.0.0.0:8000 — в браузере только http://127.0.0.1:8000/ или http://<IP_ПК>:8000/, не 0.0.0.0
+# ALLOWED_HOSTS для разработки и продакшена
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
+
+# Если список пуст — разрешаем все (только для DEBUG!)
+if not ALLOWED_HOSTS and DEBUG:
     ALLOWED_HOSTS = ['*']
-else:
-    ALLOWED_HOSTS = []
 
 # Порт dev-сервера (должен совпадать с runserver, по умолчанию 8000)
 DEV_SERVER_PORT = int(os.environ.get('DEV_SERVER_PORT', '8000'))
@@ -185,3 +184,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.User'
+
+ALLOWED_HOSTS = [
+    'Soldattov.pythonanywhere.com',
+    'www.Soldattov.pythonanywhere.com',
+    'ucenkamarket.pythonanywhere.com',
+    'www.ucenkamarket.pythonanywhere.com',
+    '127.0.0.1',
+    'localhost',
+]
