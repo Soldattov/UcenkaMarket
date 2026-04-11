@@ -58,7 +58,7 @@ DefectType — Тип дефекта
 Установка локально:
 
 1. Клонировать репозиторий
-git clone https://github.com/yourusername/ucenkamarket.git
+git clone https://github.com/Soldattov/ucenkamarket.git
 cd ucenkamarket
 
 2. Создать виртуальное окружение
