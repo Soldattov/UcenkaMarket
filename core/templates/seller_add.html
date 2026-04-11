@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Новый товар — УценкаМаркет{% endblock %}
+
+{% block content %}
+<a href="{% url 'core:manager_cabinet' %}" class="um-back">← В кабинет управляющего</a>
+
+<div class="um-page-head">
+  <h1 class="um-page-title">Размещение товара</h1>
+  <p class="um-page-lead">Укажите магазин, город и адрес (подсказки адреса — из открытых данных OpenStreetMap). Загрузите три фотографии.</p>
+</div>
+
+<div class="card um-card border-0">
+  <div class="card-body p-4 p-md-4">
+    <form method="post" action="{% url 'core:seller_add' %}" enctype="multipart/form-data" novalidate id="um-seller-form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+      {% for field in form %}
+      <div class="mb-3{% if field.name == 'store_address' %} um-address-field-wrap{% endif %}">
+        <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.name == 'store_city' %}
+        <div class="form-text">Можно выбрать город из списка или ввести свой.</div>
+        {% elif field.name == 'store_address' %}
+        <div class="form-text">Начните вводить улицу и дом — появятся варианты; можно ввести адрес целиком с клавиатуры.</div>
+        {% elif field.help_text %}
+        <div class="form-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% for err in field.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+      </div>
+      {% endfor %}
+      <input type="hidden" name="geo_lat" id="id_geo_lat" value="" autocomplete="off">
+      <input type="hidden" name="geo_lon" id="id_geo_lon" value="" autocomplete="off">
+      <datalist id="um-ru-cities">
+        {% for c in russian_cities %}
+        <option value="{{ c }}">
+        {% endfor %}
+      </datalist>
+      <hr class="my-4 opacity-25">
+      <p class="um-section-title">Фотографии</p>
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="id_image_main">Основное фото</label>
+        <input type="file" name="image_main" id="id_image_main" class="form-control" accept="image/png,image/jpeg,.jpg,.jpeg" required>
+        <div class="form-text">Показывается на карточке в каталоге.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="id_image_extra1">Дополнительное фото 1</label>
+        <input type="file" name="image_extra1" id="id_image_extra1" class="form-control" accept="image/png,image/jpeg,.jpg,.jpeg" required>
+        <div class="form-text">Только на странице товара.</div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold" for="id_image_extra2">Дополнительное фото 2</label>
+        <input type="file" name="image_extra2" id="id_image_extra2" class="form-control" accept="image/png,image/jpeg,.jpg,.jpeg" required>
+        <div class="form-text">Только на странице товара.</div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg w-100 w-md-auto px-5 py-3">Сохранить товар</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var addr = document.getElementById('id_store_address');
+  var city = document.getElementById('id_store_city');
+  var latEl = document.getElementById('id_geo_lat');
+  var lonEl = document.getElementById('id_geo_lon');
+  if (!addr || !addr.hasAttribute('data-address-suggest')) return;
+
+  var wrap = addr.closest('.um-address-field-wrap');
+  if (!wrap) return;
+  wrap.classList.add('position-relative');
+
+  var box = document.createElement('div');
+  box.className = 'list-group position-absolute shadow border rounded-2 mt-1';
+  box.style.cssText = 'z-index:25;max-height:240px;overflow:auto;left:0;right:0;top:100%;display:none;';
+  wrap.appendChild(box);
+
+  var suggestUrl = '{% url "core:address_suggest" %}';
+  var timer;
+
+  function clearGeo() {
+    if (latEl) latEl.value = '';
+    if (lonEl) lonEl.value = '';
+  }
+
+  function hideBox() {
+    box.style.display = 'none';
+    box.innerHTML = '';
+  }
+
+  function pick(item) {
+    addr.value = item.display_name;
+    if (latEl) latEl.value = item.lat;
+    if (lonEl) lonEl.value = item.lon;
+    hideBox();
+  }
+
+  addr.addEventListener('input', function () {
+    clearGeo();
+    clearTimeout(timer);
+    var q = addr.value.trim();
+    if (q.length < 3) {
+      hideBox();
+      return;
+    }
+    timer = setTimeout(function () {
+      var u = new URL(suggestUrl, window.location.origin);
+      u.searchParams.set('q', q);
+      if (city && city.value.trim()) u.searchParams.set('city', city.value.trim());
+      fetch(u.toString(), { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var results = data.results || [];
+          box.innerHTML = '';
+          if (!results.length) {
+            hideBox();
+            return;
+          }
+          results.forEach(function (item) {
+            var a = document.createElement('button');
+            a.type = 'button';
+            a.className = 'list-group-item list-group-item-action py-2 small text-start';
+            a.textContent = item.display_name;
+            a.addEventListener('click', function () { pick(item); });
+            box.appendChild(a);
+          });
+          box.style.display = 'block';
+        })
+        .catch(function () { hideBox(); });
+    }, 400);
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!wrap.contains(e.target)) hideBox();
+  });
+})();
+</script>
+{% endblock %}

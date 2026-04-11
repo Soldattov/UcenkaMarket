@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Каталог — УценкаМаркет{% endblock %}
+
+{% block content %}
+<div class="um-page-head">
+  <h1 class="um-page-title">Каталог</h1>
+  <p class="um-page-lead">Фильтры по городу, категории, магазину и типу дефекта; сортировка по городу и цене.</p>
+</div>
+
+<form method="get" action="{% url 'core:catalog' %}" class="card um-card um-filters mb-4 border-0">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-6 col-md-3 col-xl-2">
+        <label class="form-label mb-1" for="id_filter_city">Город</label>
+        <select name="city" id="id_filter_city" class="form-select">
+          <option value="">Все города</option>
+          {% for c in catalog_cities %}
+          <option value="{{ c }}" {% if filters.city == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-3 col-xl-2">
+        <label class="form-label mb-1" for="id_filter_category">Категория</label>
+        <select name="category" id="id_filter_category" class="form-select">
+          <option value="">Все</option>
+          {% for c in categories %}
+          <option value="{{ c.pk }}" {% if filters.category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-3 col-xl-2">
+        <label class="form-label mb-1" for="id_filter_store">Магазин</label>
+        <select name="store" id="id_filter_store" class="form-select">
+          <option value="">Все</option>
+          {% for s in stores %}
+          <option value="{{ s.pk }}" {% if filters.store == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-3 col-xl-2">
+        <label class="form-label mb-1" for="id_filter_defect">Тип дефекта</label>
+        <select name="defect_type" id="id_filter_defect" class="form-select">
+          <option value="">Все</option>
+          {% for d in defect_types %}
+          <option value="{{ d.pk }}" {% if filters.defect_type == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-xl-2">
+        <label class="form-label mb-1" for="id_filter_sort">Сортировка</label>
+        <select name="sort" id="id_filter_sort" class="form-select">
+          <option value="new" {% if filters.sort == 'new' %}selected{% endif %}>Сначала новые</option>
+          <option value="city" {% if filters.sort == 'city' %}selected{% endif %}>Город (А → Я)</option>
+          <option value="city_desc" {% if filters.sort == 'city_desc' %}selected{% endif %}>Город (Я → А)</option>
+          <option value="price" {% if filters.sort == 'price' %}selected{% endif %}>Цена: по возрастанию</option>
+          <option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Цена: по убыванию</option>
+        </select>
+      </div>
+      <div class="col-12 col-xl-2">
+        <label class="form-label mb-1" for="id_filter_q">Поиск</label>
+        <input type="search" name="q" id="id_filter_q" class="form-control" value="{{ filters.q }}" placeholder="Название товара…" autocomplete="off">
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Применить</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
+  {% for p in products %}
+  <div class="col">
+    <article class="card um-product-card border-0">
+      {% if p.photos %}
+      {% with first=p.photos|first %}
+      <a href="{% url 'core:product_detail' p.pk %}" class="ratio ratio-4x3 um-product-img-wrap text-decoration-none">
+        <img src="{{ first|product_media_url }}" class="w-100 h-100 object-fit-cover" alt="" loading="lazy">
+      </a>
+      {% endwith %}
+      {% else %}
+      <div class="ratio ratio-4x3 bg-light d-flex align-items-center justify-content-center border-bottom um-product-img-wrap">
+        <span class="text-muted small">Нет фото</span>
+      </div>
+      {% endif %}
+      <div class="card-body d-flex flex-column">
+        <h2 class="um-product-title card-title mb-2"><a href="{% url 'core:product_detail' p.pk %}">{{ p.title }}</a></h2>
+        <p class="small text-muted mb-3 flex-grow-1">
+          {% if p.store.city %}<span class="text-dark fw-medium">{{ p.store.city }}</span><span class="text-muted"> · </span>{% endif %}{{ p.store.name }}
+        </p>
+        <div class="d-flex flex-wrap align-items-baseline gap-2 mt-auto">
+          <span class="um-price-old text-decoration-line-through">{{ p.price_original }} ₽</span>
+          <span class="um-price-new">{{ p.price_discounted }} ₽</span>
+        </div>
+      </div>
+    </article>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="um-empty">
+      <p class="mb-0 fw-medium text-dark">Нет товаров по выбранным условиям</p>
+      <p class="small mt-2 mb-0">Попробуйте сбросить фильтры или изменить запрос.</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}{{ product.title }} — УценкаМаркет{% endblock %}
+
+{% block content %}
+<a href="{% url 'core:catalog' %}" class="um-back">← Каталог</a>
+
+<div class="um-page-head mb-4">
+  <h1 class="um-page-title">{{ product.title }}</h1>
+</div>
+
+<div class="row g-4 g-lg-5">
+  <div class="col-lg-7">
+    {% if product.photos %}
+    <div id="productCarousel" class="carousel slide um-carousel" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        {% for url in product.photos %}
+        <div class="carousel-item{% if forloop.first %} active{% endif %}">
+          <div class="ratio ratio-4x3 bg-light">
+            <img src="{{ url|product_media_url }}" class="d-block w-100 object-fit-contain" alt="Фото {{ forloop.counter }}" loading="lazy">
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if product.photos|length > 1 %}
+      <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Предыдущее</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Следующее</span>
+      </button>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="ratio ratio-4x3 bg-light rounded-4 border d-flex align-items-center justify-content-center um-carousel">
+      <span class="text-muted">Нет фотографий</span>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-lg-5">
+    <div class="card um-card um-detail-aside border-0 h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="um-price-block">
+          <span class="um-price-old-lg text-decoration-line-through">{{ product.price_original }} ₽</span>
+          <span class="um-price-new-lg">{{ product.price_discounted }} ₽</span>
+        </div>
+        <p class="small text-muted mb-3">
+          {% if product.store.city %}
+          <strong class="text-dark">Город:</strong> {{ product.store.city }}<br>
+          {% endif %}
+          <strong class="text-dark">Магазин:</strong> {{ product.store.name }}<br>
+          <strong class="text-dark">Адрес:</strong> {{ product.store.address }}
+        </p>
+        <p class="mb-0"><span class="badge bg-secondary">{{ product.get_status_display }}</span></p>
+        <hr class="my-3 opacity-25">
+        <div>
+          <p class="um-section-title">Описание дефекта</p>
+          <p class="small mb-1 fw-semibold text-dark">{{ product.defect_type.name }}</p>
+          <p class="small text-muted mb-0">{{ product.defect_type.description|default:"Описание не указано." }}</p>
+        </div>
+        {% if product.description %}
+        <hr class="my-3 opacity-25">
+        <div>
+          <p class="um-section-title">О товаре</p>
+          <p class="small mb-0 text-secondary">{{ product.description }}</p>
+        </div>
+        {% endif %}
+        {% if can_reserve %}
+        <div class="mt-auto pt-4">
+          <a href="{% url 'core:reserve' product.pk %}" class="btn btn-primary btn-lg w-100 py-3">Забронировать</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

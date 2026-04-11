@@ -1,0 +1,35 @@
+{# Переиспользуемые поля телефона и email: передайте contact_phone, contact_email, required_flag (опционально) #}
+{% with req=required_flag|default:True %}
+<div class="mb-3">
+  <label for="id_contact_phone" class="form-label fw-semibold">Телефон для связи</label>
+  <input
+    type="tel"
+    name="contact_phone"
+    id="id_contact_phone"
+    class="form-control"
+    inputmode="tel"
+    autocomplete="tel"
+    placeholder="+7 (999) 123-45-67"
+    pattern="\+?[0-9\s\-\(\)]{10,25}"
+    title="Номер телефона, например +7 (999) 123-45-67"
+    value="{{ contact_phone|default:''|escape }}"
+    {% if req %}required{% endif %}
+  >
+  <div class="form-text">По этому номеру магазин сможет уточнить детали брони.</div>
+</div>
+<div class="mb-3">
+  <label for="id_contact_email" class="form-label fw-semibold">Электронная почта</label>
+  <input
+    type="email"
+    name="contact_email"
+    id="id_contact_email"
+    class="form-control"
+    inputmode="email"
+    autocomplete="email"
+    placeholder="name@example.com"
+    value="{{ contact_email|default:''|escape }}"
+    {% if req %}required{% endif %}
+  >
+  <div class="form-text">На почту можно отправить подтверждение или напоминание.</div>
+</div>
+{% endwith %}

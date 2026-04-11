@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}ЛК покупателя — УценкаМаркет{% endblock %}
+
+{% block content %}
+<div class="um-page-head">
+  <h1 class="um-page-title">Личный кабинет</h1>
+  {% if session_user %}
+  <p class="um-page-lead">Вы вошли как <strong class="text-dark">{{ session_user.first_name|default:session_user.username }}</strong> ({{ session_user.username }}).</p>
+  {% endif %}
+  <p class="um-page-lead mt-2">Активные брони и коды для выдачи в магазине.</p>
+</div>
+
+<div class="table-responsive um-table-wrap">
+  <table class="table table-striped table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">Товар</th>
+        <th scope="col">Магазин</th>
+        <th scope="col">Код</th>
+        <th scope="col">Срок действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reservations %}
+      <tr>
+        <td class="fw-medium">{{ r.product.title }}</td>
+        <td class="small text-muted">{{ r.product.store.name }}</td>
+        <td><code class="fs-6">{{ r.code }}</code></td>
+        <td class="small">{{ r.expires_at|date:"d.m.Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="text-muted text-center py-5">Нет активных броней</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

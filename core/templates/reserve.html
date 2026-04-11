@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Бронь — {{ product.title }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'core:product_detail' product.pk %}" class="um-back">← К товару</a>
+
+<div class="um-page-head">
+  <h1 class="um-page-title">Оформление брони</h1>
+  <p class="um-page-lead">Укажите контакты и при желании время визита в магазин.</p>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-md-10 col-lg-7 col-xl-6">
+    <div class="card um-card border-0">
+      <div class="card-body p-4 p-md-4">
+        <div class="um-reserve-summary mb-4">
+          <p class="small mb-0 text-dark"><strong>{{ product.title }}</strong></p>
+          <p class="small mb-0 mt-2 text-muted">{% if product.store.city %}{{ product.store.city }} · {% endif %}{{ product.store.name }} · <span class="um-price-highlight">{{ product.price_discounted }} ₽</span></p>
+        </div>
+
+        {% if can_reserve %}
+        <form method="post" action="{% url 'core:reserve' product.pk %}">
+          {% csrf_token %}
+          {% include "includes/contact_phone_email_fields.html" %}
+          <div class="mb-3">
+            <label for="id_visit_time" class="form-label fw-semibold">Время визита в магазин</label>
+            <input type="datetime-local" name="visit_time" id="id_visit_time" class="form-control" min="{{ visit_min }}" max="{{ visit_max }}" value="{{ visit_time_value|default:''|escape }}">
+            <div class="form-text">Необязательно. Если указываете — не раньше сейчас и не дальше чем на 24 часа вперёд.</div>
+          </div>
+          <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" name="accept_rules" id="id_accept_rules" value="1" required>
+            <label class="form-check-label small" for="id_accept_rules">
+              Соглашаюсь с <a href="#" onclick="return false;" class="link-primary text-decoration-underline" title="Полный текст правил будет опубликован позже">правилами бронирования</a> и условиями уценённого товара
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg w-100 py-3">Подтвердить бронь</button>
+        </form>
+        {% else %}
+        <p class="text-warning mb-3">Этот товар сейчас нельзя забронировать.</p>
+        <a href="{% url 'core:catalog' %}" class="btn btn-outline-secondary">В каталог</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
