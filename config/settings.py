@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 import socket
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,8 +55,8 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes', 'on')
-
+#DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes', 'on')
+DEBUG = False
 # ALLOWED_HOSTS для разработки и продакшена
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
@@ -193,3 +194,10 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
 ]
+
+# Загружаем переменные из .env
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
+
+# Теперь можно использовать
+BITRIX24_WEBHOOK = os.getenv('BITRIX24_WEBHOOK', '')

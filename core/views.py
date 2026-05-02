@@ -1,4 +1,5 @@
 import random
+import logging  # ← НОВОЕ
 from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
@@ -22,6 +23,7 @@ from .nominatim import address_suggestions
 from .product_files import save_product_uploads, validate_product_image_files
 from .russian_cities import RUSSIAN_CITIES
 from .session_auth import get_session_user, login_session
+from .services.bitrix24 import send_reservation_to_bitrix24  # ← НОВОЕ
 
 RESERVATION_HOLD = timedelta(hours=24)
 
@@ -375,6 +377,15 @@ def reserve(request, id):  # noqa: A002
         messages.error(request, 'Товар уже недоступен для брони.')
         return redirect(reverse('core:product_detail', kwargs={'id': id}))
 
+    # === Отправка в Bitrix24 ===
+    try:
+        reservation = Reservation.objects.get(code=code, user=user, product=product)
+        send_reservation_to_bitrix24(reservation)
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to send reservation {code} to Bitrix24: {e}")
+    # ============================
+
     messages.success(
         request,
         f'Бронь создана. Код: {code}. Покажите его в магазине до {expires_at:%d.%m %H:%M}.',
@@ -559,3 +570,21 @@ def complete_reservation(request, id):  # noqa: A002
 
     messages.success(request, 'Бронь завершена, товар отмечен как проданный.')
     return redirect(reverse('core:manager_cabinet'))
+
+#тест
+
+def api_debug(request):
+    """Временный endpoint для отладки — отдаёт данные в JSON"""
+    products = list(Product.objects.all().values(
+        'id', 'title', 'price_original', 'price_discounted', 'status'
+    ))
+    reservations = list(Reservation.objects.all().values(
+        'id', 'code', 'status', 'expires_at'
+    ))
+
+    return JsonResponse({
+        'products_count': len(products),
+        'products': products,
+        'reservations_count': len(reservations),
+        'reservations': reservations
+    })

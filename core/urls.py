@@ -26,4 +26,6 @@ urlpatterns = [
         views.address_suggest,
         name='address_suggest',
     ),
+    #тест
+    path('api/debug/', views.api_debug, name='api_debug'),
 ]
