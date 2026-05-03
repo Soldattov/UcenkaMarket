@@ -200,4 +200,4 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 # Теперь можно использовать
-BITRIX24_WEBHOOK = os.getenv('BITRIX24_WEBHOOK', '')
+CLOUDFLARE_WORKER_URL = os.getenv('CLOUDFLARE_WORKER_URL', '')
